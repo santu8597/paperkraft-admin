@@ -1,0 +1,47 @@
+.editorWrapper :global(.ProseMirror) {
+  min-height: 300px;
+  padding: 1rem;
+  color: #000000 !important;
+}
+
+.editorWrapper :global(.ProseMirror p) {
+  color: #000000 !important;
+  margin: 0.5em 0;
+}
+
+.editorWrapper :global(.ProseMirror h2) {
+  color: #000000 !important;
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 0.75em 0 0.5em 0;
+}
+
+.editorWrapper :global(.ProseMirror h3) {
+  color: #000000 !important;
+  font-size: 1.25em;
+  font-weight: bold;
+  margin: 0.75em 0 0.5em 0;
+}
+
+.editorWrapper :global(.ProseMirror strong) {
+  font-weight: bold;
+  color: #000000 !important;
+}
+
+.editorWrapper :global(.ProseMirror em) {
+  font-style: italic;
+}
+
+.editorWrapper :global(.ProseMirror ul),
+.editorWrapper :global(.ProseMirror ol) {
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+.editorWrapper :global(.ProseMirror li) {
+  color: #000000 !important;
+}
+
+.editorWrapper :global(.ProseMirror):focus {
+  outline: none;
+}
