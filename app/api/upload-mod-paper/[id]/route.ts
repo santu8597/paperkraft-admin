@@ -13,15 +13,19 @@ export async function POST(
 
     if (!file) {
       return NextResponse.json(
-        { success: false, error: 'PDF file is required' },
+        { success: false, error: 'Word document file is required' },
         { status: 400 }
       );
     }
 
-    // Validate file type
-    if (file.type !== 'application/pdf') {
+    // Validate file type (accept both .doc and .docx)
+    const allowedTypes = [
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+    if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { success: false, error: 'Only PDF files are allowed' },
+        { success: false, error: 'Only Word documents (.doc, .docx) are allowed' },
         { status: 400 }
       );
     }

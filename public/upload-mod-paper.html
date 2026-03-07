@@ -191,16 +191,16 @@
             </div>
 
             <div class="form-group">
-                <label>PDF File *</label>
+                <label>Word Document *</label>
                 <div class="file-input-wrapper">
                     <input 
                         type="file" 
                         id="pdfFile" 
-                        accept="application/pdf"
+                        accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                         required
                     >
                     <label for="pdfFile" class="file-input-label">
-                        📎 Click to select PDF file
+                        📎 Click to select Word document (.doc or .docx)
                     </label>
                 </div>
                 <div class="file-name" id="fileName"></div>
@@ -244,7 +244,7 @@
             const subjectId = subjectIdInput.value.trim();
 
             if (!file) {
-                showMessage('Please select a PDF file', 'error');
+                showMessage('Please select a Word document', 'error');
                 return;
             }
 
@@ -253,9 +253,13 @@
                 return;
             }
 
-            // Validate file type
-            if (file.type !== 'application/pdf') {
-                showMessage('Only PDF files are allowed', 'error');
+            // Validate file type (accept both .doc and .docx)
+            const allowedTypes = [
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            ];
+            if (!allowedTypes.includes(file.type)) {
+                showMessage('Only Word documents (.doc, .docx) are allowed', 'error');
                 return;
             }
 
