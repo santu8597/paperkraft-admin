@@ -560,7 +560,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4 text-gray-900">Upload Excel File</h2>
           <input
@@ -658,7 +658,7 @@ export default function Dashboard() {
                             Department
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            Question Paper
+                            Question Bank
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                             Moderator's Paper
@@ -706,7 +706,10 @@ export default function Dashboard() {
                                     disabled={uploadingSubjectCode === subject.code}
                                   />
                                   <span className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm hover:shadow-md disabled:bg-gray-400">
-                                    {uploadingSubjectCode === subject.code ? 'Uploading...' : 'Upload Question Paper'}
+                                    <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                    </svg>
+                                    {uploadingSubjectCode === subject.code ? 'Uploading...' : 'Upload Question Bank'}
                                   </span>
                                 </label>
                               )}
@@ -722,7 +725,7 @@ export default function Dashboard() {
                                   title={`Download ${subject.mod_questionPaper.fileName}`}
                                 >
                                   <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                   </svg>
                                   Download Paper
                                 </a>
@@ -758,6 +761,9 @@ export default function Dashboard() {
                                     disabled={uploadingSyllabusCode === subject.code}
                                   />
                                   <span className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium shadow-sm hover:shadow-md disabled:bg-gray-400">
+                                    <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                    </svg>
                                     {uploadingSyllabusCode === subject.code ? 'Uploading...' : 'Upload Syllabus'}
                                   </span>
                                 </label>
