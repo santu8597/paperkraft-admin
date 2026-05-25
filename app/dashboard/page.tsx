@@ -39,7 +39,7 @@ interface Moderator {
   name: string;
   email: string;
   phone: string;
-  password: string;
+  password?: string;
   assignedSubjects: string[];
 }
 
@@ -197,7 +197,6 @@ export default function Dashboard() {
               name: moderatorName,
               email: moderatorEmail,
               phone: moderatorPhone,
-              password: 'admin123',
               assignedSubjects: [subject.code],
             };
             moderatorsMap.set(moderatorEmail || moderatorName, moderator);
@@ -354,7 +353,6 @@ export default function Dashboard() {
         body: JSON.stringify({
           moderatorName: moderator.name,
           moderatorEmail: moderator.email,
-          password: moderator.password,
         }),
       });
 
@@ -521,7 +519,7 @@ export default function Dashboard() {
   }, [editingTemplate, emailTemplates]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-gray-100">
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       {dialog && (
         <Dialog
@@ -821,7 +819,7 @@ export default function Dashboard() {
                               {moderator.phone}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">
-                              {moderator.password}
+                              Hidden
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-700">
                               <div className="flex flex-wrap gap-1">
