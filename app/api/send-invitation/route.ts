@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import nodemailer from 'nodemailer';
 import connectDB from '../../../lib/mongodb';
+import Moderator from '../../../lib/models/Moderator';
 import EmailTemplate from '../../../lib/models/EmailTemplate';
+import { generatePassword } from '../../../lib/passwordGenerator';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,6 +19,26 @@ export async function POST(request: NextRequest) {
 
     // Get email template from database
     await connectDB();
+    let invitationPassword = password;
+
+    if (!invitationPassword) {
+      invitationPassword = generatePassword(6);
+      const hashedPassword = await bcrypt.hash(invitationPassword, 10);
+
+      const updatedModerator = await Moderator.findOneAndUpdate(
+        { email: moderatorEmail },
+        { password: hashedPassword },
+        { new: true }
+      );
+
+      if (!updatedModerator) {
+        return NextResponse.json(
+          { success: false, error: 'Moderator not found' },
+          { status: 404 }
+        );
+      }
+    }
+
     const template = await EmailTemplate.findOne({ type: 'invitation' });
 
     let subject = 'Invitation to Admin Panel - Moderator Access';
@@ -49,7 +72,7 @@ export async function POST(request: NextRequest) {
     htmlBody = htmlBody
       .replace(/{{moderatorName}}/g, moderatorName)
       .replace(/{{moderatorEmail}}/g, moderatorEmail)
-      .replace(/{{password}}/g, password);
+      .replace(/{{password}}/g, invitationPassword);
 
     // Create transporter
     const transporter = nodemailer.createTransport({
