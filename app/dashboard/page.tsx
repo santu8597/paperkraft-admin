@@ -11,6 +11,7 @@ interface Subject {
   code: string;
   name: string;
   department: string;
+  is_questionPaperUploaded?: boolean;
   questionPaper?: {
     fileName: string;
     fileType: string;
@@ -401,6 +402,17 @@ export default function Dashboard() {
     } finally {
       setSendingReminderEmail(null);
     }
+  };
+
+  const areAllAssignedModeratorPapersUploaded = (moderator: Moderator) => {
+    if (moderator.assignedSubjects.length === 0) {
+      return false;
+    }
+
+    return moderator.assignedSubjects.every((subjectCode) => {
+      const assignedSubject = subjects.find((subject) => subject.code === subjectCode);
+      return Boolean(assignedSubject?.is_mod_questionPaperUploaded);
+    });
   };
 
   const handleSaveEmailTemplate = async (type: 'invitation' | 'reminder', subject: string, body: string) => {
@@ -830,20 +842,31 @@ export default function Dashboard() {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                               <div className="flex gap-2">
+                                {(() => {
+                                  const disableActions = areAllAssignedModeratorPapersUploaded(moderator);
+                                  const disabledReason = 'Already uploaded paper';
+
+                                  return (
+                                    <>
                                 <button
                                   onClick={() => handleSendInvitation(moderator)}
-                                  disabled={sendingInvitationEmail === moderator.email}
+                                      disabled={disableActions || sendingInvitationEmail === moderator.email}
+                                      title={disableActions ? disabledReason : undefined}
                                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm hover:shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed"
                                 >
                                   {sendingInvitationEmail === moderator.email ? 'Sending...' : 'Invite'}
                                 </button>
                                 <button
                                   onClick={() => handleSendReminder(moderator)}
-                                  disabled={sendingReminderEmail === moderator.email}
+                                      disabled={disableActions || sendingReminderEmail === moderator.email}
+                                      title={disableActions ? disabledReason : undefined}
                                   className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium shadow-sm hover:shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed"
                                 >
                                   {sendingReminderEmail === moderator.email ? 'Sending...' : 'Remind'}
                                 </button>
+                                    </>
+                                  );
+                                })()}
                               </div>
                             </td>
                           </tr>
