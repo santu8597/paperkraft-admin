@@ -541,7 +541,7 @@ export default function Dashboard() {
           </div>
           <div className="flex gap-3">
             <a
-              href="https://github.com/santu8597/electron-builder/releases/download/V1-release/PaperKraft.Setup.1.0.0.exe"
+              href="https://github.com/santu8597/electron-builder/releases/download/latest/PaperKraft-latest.Setup.1.0.0.exe"
               download
               className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm hover:shadow-md flex items-center gap-2"
             >
