@@ -92,6 +92,7 @@ export async function POST(request: NextRequest) {
     const updateData: any = {};
     if (questionPaperData) {
       updateData.questionPaper = questionPaperData;
+      updateData.is_questionPaperUploaded = true;
     }
     if (syllabusData) {
       updateData.syllabus = syllabusData;

@@ -795,9 +795,9 @@ export default function Dashboard() {
                           <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                             Phone
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          {/* <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                             Password
-                          </th>
+                          </th> */}
                           <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                             Assigned Subjects
                           </th>
@@ -818,9 +818,7 @@ export default function Dashboard() {
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                               {moderator.phone}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">
-                              Hidden
-                            </td>
+                            
                             <td className="px-6 py-4 text-sm text-gray-700">
                               <div className="flex flex-wrap gap-1">
                                 {moderator.assignedSubjects.map((subject, idx) => (
