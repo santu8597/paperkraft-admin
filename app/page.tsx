@@ -8,6 +8,7 @@ export default function Home() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -109,15 +110,37 @@ export default function Home() {
                   <label htmlFor="password" className="mb-2 block text-[13px] font-[700] text-slate-600">
                     Password
                   </label>
-                  <input
-                    type="password"
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="h-12 w-full rounded-[14px] border border-slate-200 bg-white px-4 text-[14px] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#2f67ff] focus:ring-4 focus:ring-[#2f67ff]/10"
-                    placeholder="Enter your password"
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="h-12 w-full rounded-[14px] border border-slate-200 bg-white px-4 pr-12 text-[14px] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#2f67ff] focus:ring-4 focus:ring-[#2f67ff]/10"
+                      placeholder="Enter your password"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((current) => !current)}
+                      className="group absolute inset-y-0 right-0 flex items-center justify-center px-4 text-slate-400 transition-all duration-200 hover:-translate-y-0.5 hover:text-[#2f67ff] active:translate-y-0 active:scale-90"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? (
+                        <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M3 3l18 18" />
+                          <path d="M10.58 10.58A2 2 0 0 0 13.42 13.42" />
+                          <path d="M9.88 5.09A10.5 10.5 0 0 1 12 4.75c5.5 0 9.5 5.25 9.5 5.25s-1.33 1.92-3.55 3.47" />
+                          <path d="M6.1 6.1C3.66 7.82 2.5 10 2.5 10s1.83 2.66 4.82 4.57A10.7 10.7 0 0 0 12 15.25c1.01 0 1.99-.16 2.91-.46" />
+                        </svg>
+                      ) : (
+                        <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M2.5 12S5.5 5.5 12 5.5 21.5 12 21.5 12 18.5 18.5 12 18.5 2.5 12 2.5 12Z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
                 </div>
 
                 {error && (
@@ -128,9 +151,12 @@ export default function Home() {
 
                 <button
                   type="submit"
-                  className="flex h-12 w-full items-center justify-center rounded-[14px] bg-[#2f67ff] text-[14px] font-[700] text-white shadow-[0_12px_28px_rgba(47,103,255,0.28)] transition hover:bg-[#2456de]"
+                  className="group relative flex h-12 w-full items-center justify-center overflow-hidden rounded-[14px] bg-[linear-gradient(180deg,_#3b73ff_0%,_#2456de_100%)] text-[14px] font-[700] text-white shadow-[0_12px_28px_rgba(47,103,255,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_18px_38px_rgba(47,103,255,0.34)] active:translate-y-0 active:scale-[0.985]"
                 >
+                  <span className="absolute inset-0 bg-[linear-gradient(110deg,_transparent_10%,_rgba(255,255,255,0.24)_45%,_transparent_80%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <span className="relative"> 
                   Login to PaperKraft
+                  </span>
                 </button>
               </form>
             </div>

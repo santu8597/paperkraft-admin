@@ -165,8 +165,11 @@ export default function Dashboard() {
   const pageShell = 'min-h-screen text-slate-900';
   const panelShell = 'rounded-[24px] border border-slate-200/80 bg-white/92 shadow-[0_14px_40px_rgba(15,23,42,0.08)] backdrop-blur';
   const sectionShell = 'rounded-[20px] border border-slate-200/80 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.06)]';
-  const primaryButton = 'inline-flex items-center justify-center gap-2 rounded-[14px] bg-[#2f67ff] px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(47,103,255,0.28)] transition hover:bg-[#2456de]';
-  const secondaryButton = 'inline-flex items-center justify-center gap-2 rounded-[14px] border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-[#2f67ff] shadow-[0_10px_24px_rgba(15,23,42,0.04)] transition hover:border-slate-300 hover:bg-slate-50';
+  const primaryButton = 'inline-flex items-center justify-center gap-2 rounded-[14px] bg-[linear-gradient(180deg,_#3b73ff_0%,_#2456de_100%)] px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(47,103,255,0.28)] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_16px_34px_rgba(47,103,255,0.34)] active:translate-y-0 active:scale-[0.985]';
+  const secondaryButton = 'inline-flex items-center justify-center gap-2 rounded-[14px] border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-[#2f67ff] shadow-[0_10px_24px_rgba(15,23,42,0.04)] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:shadow-[0_14px_28px_rgba(15,23,42,0.07)] active:translate-y-0 active:scale-[0.985]';
+  const tabButton = 'group -mb-px inline-flex items-center gap-2 border-b-2 px-3 pb-4 pt-1 text-[14px] font-[600] transition-all duration-200 ease-out sm:px-4 hover:-translate-y-0.5 hover:text-[#2f67ff] active:translate-y-0 active:scale-[0.985]';
+  const elevatedActionButton = 'inline-flex items-center justify-center rounded-[12px] bg-[#2f67ff] px-4 py-2.5 text-[13px] font-[700] text-white shadow-[0_10px_24px_rgba(47,103,255,0.25)] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#2456de] hover:shadow-[0_16px_32px_rgba(47,103,255,0.3)] active:translate-y-0 active:scale-[0.985]';
+  const elevatedSecondaryActionButton = 'inline-flex items-center justify-center rounded-[12px] border border-slate-200 bg-white px-4 py-2.5 text-[13px] font-[700] text-[#2f67ff] shadow-[0_10px_24px_rgba(15,23,42,0.05)] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:shadow-[0_16px_30px_rgba(15,23,42,0.08)] active:translate-y-0 active:scale-[0.985]';
 
   const SkeletonLine = ({ className = '' }: { className?: string }) => (
     <div className={`animate-pulse rounded-full bg-slate-200/80 ${className}`} />
@@ -750,18 +753,18 @@ export default function Dashboard() {
               </div>
               <h2 className="text-[18px] font-[700] tracking-[-0.02em] text-slate-900">Upload Excel File</h2>
             </div>
-            <label className="group flex cursor-pointer items-stretch overflow-hidden rounded-[14px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.03)] transition hover:border-slate-300">
-              <div className="flex items-center gap-2 border-r border-slate-200 bg-slate-50 px-5 py-4 text-[#2f67ff] transition group-hover:bg-slate-100">
+            <label className="group flex cursor-pointer items-stretch overflow-hidden rounded-[14px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.03)] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_14px_28px_rgba(15,23,42,0.06)] active:translate-y-0 active:scale-[0.995]">
+              <div className="flex items-center gap-2 border-r border-slate-200 bg-slate-50 px-5 py-4 text-[#2f67ff] transition-all duration-200 ease-out group-hover:bg-slate-100 group-hover:text-[#2456de]">
                 <svg className="h-[18px] w-[18px]" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M10 3v10" />
                   <path d="m6.5 7.5 3.5-3.5 3.5 3.5" />
                   <path d="M4 15.5A2.5 2.5 0 0 0 6.5 18h7A2.5 2.5 0 0 0 16 15.5" />
                 </svg>
-                <span className="text-[14px] font-[700]">Choose File</span>
+                <span className="text-[14px] font-[700] transition-transform duration-200 group-hover:translate-x-0.5">Choose File</span>
               </div>
-              <div className="flex min-w-0 flex-1 items-center justify-between px-4 py-4 text-[14px] text-slate-400 sm:px-5">
+              <div className="flex min-w-0 flex-1 items-center justify-between px-4 py-4 text-[14px] text-slate-400 transition-colors duration-200 sm:px-5 group-hover:text-slate-500">
                 <span className="truncate">No file chosen</span>
-                <svg className="h-[18px] w-[18px] shrink-0 text-slate-400" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+                <svg className="h-[18px] w-[18px] shrink-0 text-slate-400 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-[#2f67ff]" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
                   <path d="m12.5 4.5 3 3a2.1 2.1 0 0 1 0 3l-7 7a2.6 2.6 0 0 1-1.5.8l-3.8.5.5-3.8a2.6 2.6 0 0 1 .8-1.5l7-7a2.1 2.1 0 0 1 3 0Z" strokeLinejoin="round" />
                 </svg>
               </div>
@@ -808,7 +811,7 @@ export default function Dashboard() {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`group -mb-px inline-flex items-center gap-2 border-b-2 px-3 pb-4 pt-1 text-[14px] font-[600] transition sm:px-4 ${
+                      className={`${tabButton} ${
                         isActive
                           ? 'border-[#2f67ff] text-[#2f67ff]'
                           : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800'
@@ -908,7 +911,7 @@ export default function Dashboard() {
                                     className="hidden"
                                     disabled={uploadingSubjectCode === subject.code}
                                   />
-                                  <span className="inline-flex items-center gap-2 rounded-[12px] bg-[#2f67ff] px-4 py-2.5 text-[13px] font-[700] text-white shadow-[0_10px_24px_rgba(47,103,255,0.25)] transition hover:bg-[#2456de] disabled:bg-gray-400">
+                                  <span className={`${elevatedActionButton} disabled:bg-gray-400`}>
                                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                                     </svg>
@@ -924,7 +927,7 @@ export default function Dashboard() {
                                   download={subject.mod_questionPaper.fileName}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-2 rounded-[12px] bg-[#2f67ff] px-4 py-2.5 text-[13px] font-[700] text-white shadow-[0_10px_24px_rgba(47,103,255,0.25)] transition hover:bg-[#2456de]"
+                                  className={elevatedActionButton}
                                   title={`Download ${subject.mod_questionPaper.fileName}`}
                                 >
                                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -966,7 +969,7 @@ export default function Dashboard() {
                                     className="hidden"
                                     disabled={uploadingSyllabusCode === subject.code}
                                   />
-                                  <span className="inline-flex items-center gap-2 rounded-[12px] bg-white px-4 py-2.5 text-[13px] font-[700] text-[#2f67ff] shadow-[0_10px_24px_rgba(15,23,42,0.05)] ring-1 ring-slate-200 transition hover:bg-slate-50">
+                                  <span className={elevatedSecondaryActionButton}>
                                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                                     </svg>
@@ -1052,7 +1055,7 @@ export default function Dashboard() {
                                   onClick={() => handleSendInvitation(moderator)}
                                       disabled={disableActions || sendingInvitationEmail === moderator.email}
                                       title={disableActions ? disabledReason : undefined}
-                                  className="inline-flex items-center justify-center rounded-[12px] bg-[#2f67ff] px-4 py-2.5 text-[13px] font-[700] text-white shadow-[0_10px_24px_rgba(47,103,255,0.25)] transition hover:bg-[#2456de] disabled:cursor-not-allowed disabled:bg-slate-300"
+                                  className={`${elevatedActionButton} disabled:cursor-not-allowed disabled:bg-slate-300`}
                                 >
                                   {sendingInvitationEmail === moderator.email ? 'Sending...' : 'Invite'}
                                 </button>
@@ -1060,7 +1063,7 @@ export default function Dashboard() {
                                   onClick={() => handleSendReminder(moderator)}
                                       disabled={disableActions || sendingReminderEmail === moderator.email}
                                       title={disableActions ? disabledReason : undefined}
-                                  className="inline-flex items-center justify-center rounded-[12px] bg-[#ff9b3d] px-4 py-2.5 text-[13px] font-[700] text-white shadow-[0_10px_24px_rgba(255,155,61,0.22)] transition hover:bg-[#ef8a21] disabled:cursor-not-allowed disabled:bg-slate-300"
+                                  className="inline-flex items-center justify-center rounded-[12px] bg-[linear-gradient(180deg,_#ffad57_0%,_#ef8a21_100%)] px-4 py-2.5 text-[13px] font-[700] text-white shadow-[0_10px_24px_rgba(255,155,61,0.22)] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_16px_32px_rgba(255,155,61,0.28)] active:translate-y-0 active:scale-[0.985] disabled:cursor-not-allowed disabled:bg-slate-300"
                                 >
                                   {sendingReminderEmail === moderator.email ? 'Sending...' : 'Remind'}
                                 </button>
@@ -1100,7 +1103,7 @@ export default function Dashboard() {
                       <h4 className="text-[16px] font-[700] tracking-[-0.01em] text-slate-800">Invitation Email Template</h4>
                       <button
                         onClick={() => setEditingTemplate(editingTemplate === 'invitation' ? null : 'invitation')}
-                        className="inline-flex items-center rounded-[12px] bg-[#2f67ff] px-4 py-2.5 text-[13px] font-[700] text-white transition hover:bg-[#2456de]"
+                        className={elevatedActionButton}
                       >
                         {editingTemplate === 'invitation' ? 'Cancel' : 'Edit Template'}
                       </button>
@@ -1133,7 +1136,7 @@ export default function Dashboard() {
                         </div>
                         <button
                           type="submit"
-                          className="inline-flex items-center rounded-[12px] bg-[#2f67ff] px-5 py-2.5 text-[13px] font-[700] text-white transition hover:bg-[#2456de]"
+                          className={elevatedActionButton}
                         >
                           Save Template
                         </button>
@@ -1164,7 +1167,7 @@ export default function Dashboard() {
                       <h4 className="text-[16px] font-[700] tracking-[-0.01em] text-slate-800">Reminder Email Template</h4>
                       <button
                         onClick={() => setEditingTemplate(editingTemplate === 'reminder' ? null : 'reminder')}
-                        className="inline-flex items-center rounded-[12px] bg-[#2f67ff] px-4 py-2.5 text-[13px] font-[700] text-white transition hover:bg-[#2456de]"
+                        className={elevatedActionButton}
                       >
                         {editingTemplate === 'reminder' ? 'Cancel' : 'Edit Template'}
                       </button>
@@ -1197,7 +1200,7 @@ export default function Dashboard() {
                         </div>
                         <button
                           type="submit"
-                          className="inline-flex items-center rounded-[12px] bg-[#2f67ff] px-5 py-2.5 text-[13px] font-[700] text-white transition hover:bg-[#2456de]"
+                          className={elevatedActionButton}
                         >
                           Save Template
                         </button>
@@ -1238,13 +1241,13 @@ export default function Dashboard() {
                   <div className="flex flex-wrap gap-3">
                     <button
                       onClick={handleAddGroup}
-                      className="inline-flex items-center rounded-[12px] bg-[#2f67ff] px-4 py-2.5 text-[13px] font-[700] text-white transition hover:bg-[#2456de]"
+                      className={elevatedActionButton}
                     >
                       Add Group
                     </button>
                     <button
                       onClick={handleSaveExamStructure}
-                      className="inline-flex items-center rounded-[12px] bg-[#2f67ff] px-4 py-2.5 text-[13px] font-[700] text-white transition hover:bg-[#2456de]"
+                      className={elevatedActionButton}
                     >
                       Save Structure
                     </button>
@@ -1275,7 +1278,7 @@ export default function Dashboard() {
                         </div>
                         <button
                           onClick={() => handleRemoveGroup(groupIndex)}
-                          className="inline-flex items-center rounded-[12px] bg-[#2f67ff] px-3 py-2.5 text-[13px] font-[700] text-white transition hover:bg-[#2456de]"
+                          className="inline-flex items-center rounded-[12px] bg-[#2f67ff] px-3 py-2.5 text-[13px] font-[700] text-white shadow-[0_10px_24px_rgba(47,103,255,0.25)] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#2456de] hover:shadow-[0_16px_32px_rgba(47,103,255,0.3)] active:translate-y-0 active:scale-[0.985]"
                         >
                           Remove Group
                         </button>
@@ -1326,7 +1329,7 @@ export default function Dashboard() {
                             </div>
                             <button
                               onClick={() => handleRemoveQuestionType(groupIndex, typeIndex)}
-                              className="inline-flex items-center rounded-[12px] bg-[#2f67ff] px-3 py-2.5 text-[13px] font-[700] text-white transition hover:bg-[#2456de]"
+                              className="inline-flex items-center rounded-[12px] bg-[#2f67ff] px-3 py-2.5 text-[13px] font-[700] text-white shadow-[0_10px_24px_rgba(47,103,255,0.25)] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-[#2456de] hover:shadow-[0_16px_32px_rgba(47,103,255,0.3)] active:translate-y-0 active:scale-[0.985]"
                             >
                               Remove
                             </button>
@@ -1336,7 +1339,7 @@ export default function Dashboard() {
 
                       <button
                         onClick={() => handleAddQuestionType(groupIndex)}
-                        className="inline-flex items-center rounded-[12px] bg-[#2f67ff] px-4 py-2.5 text-[13px] font-[700] text-white transition hover:bg-[#2456de]"
+                        className={elevatedActionButton}
                       >
                         Add Question Type
                       </button>
