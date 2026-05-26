@@ -445,6 +445,33 @@ export default function Dashboard() {
     }
   };
 
+  
+
+  const handleDeleteQuestionBank = async (subjectCode: string) => {
+    try {
+      const response = await fetch('/api/subjects/question-paper', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subjectCode }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSubjects(subjects.map(sub => 
+          sub.code === subjectCode 
+            ? { ...sub, questionPaper: undefined, is_questionPaperUploaded: false } 
+            : sub
+        ));
+        setToast({ message: 'Question bank deleted.', type: 'success' });
+      } else {
+        setToast({ message: 'Error: ' + result.error, type: 'error' });
+      }
+    } catch (error) {
+      setToast({ message: 'Error deleting question bank.', type: 'error' });
+    }
+  };
+
   const handleUploadSyllabus = async (subjectCode: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -901,6 +928,27 @@ export default function Dashboard() {
                                   >
                                     View
                                   </a>
+                                  <button
+                                    onClick={() => setDialog({
+                                      isOpen: true,
+                                      title: 'Delete Question Bank',
+                                      message: 'Are you sure you want to delete the uploaded question bank? This cannot be undone.',
+                                      onConfirm: async () => {
+                                        await handleDeleteQuestionBank(subject.code);
+                                        setDialog(null);
+                                      }
+                                    })}
+                                    title="Delete file"
+                                    className="inline-flex items-center rounded-md px-2 py-1 text-[13px] font-[700] text-red-600 hover:bg-red-50"
+                                  >
+                                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M3 6h18" />
+                                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                      <path d="M10 11v6" />
+                                      <path d="M14 11v6" />
+                                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                                    </svg>
+                                  </button>
                                 </div>
                               ) : (
                                 <label className="cursor-pointer">
