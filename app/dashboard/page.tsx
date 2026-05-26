@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import * as XLSX from 'xlsx';
 import RichTextEditor from '../components/RichTextEditor';
@@ -69,6 +70,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<'subjects' | 'moderators' | 'emailTemplates' | 'examStructure'>('subjects');
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [moderators, setModerators] = useState<Moderator[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [emailTemplates, setEmailTemplates] = useState<{ invitation: EmailTemplate | null; reminder: EmailTemplate | null }>({
     invitation: null,
     reminder: null,
@@ -116,6 +118,145 @@ export default function Dashboard() {
 <p><strong>Please ensure to submit your question papers before the deadline.</strong></p>
 <p>If you have any questions or need assistance, please contact the administrator immediately.</p>`;
 
+  const tabs = [
+    { id: 'subjects', label: 'Subject Allocation', icon: 'grid' },
+    { id: 'moderators', label: 'Moderators', icon: 'user' },
+    { id: 'emailTemplates', label: 'Email Templates', icon: 'mail' },
+    { id: 'examStructure', label: 'Exam Structure', icon: 'layers' },
+  ] as const;
+
+  const iconClass = 'h-4 w-4';
+
+  const renderTabIcon = (icon: (typeof tabs)[number]['icon']) => {
+    switch (icon) {
+      case 'grid':
+        return (
+          <svg className={iconClass} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <rect x="3" y="3" width="5" height="5" rx="1.2" />
+            <rect x="12" y="3" width="5" height="5" rx="1.2" />
+            <rect x="3" y="12" width="5" height="5" rx="1.2" />
+            <rect x="12" y="12" width="5" height="5" rx="1.2" />
+          </svg>
+        );
+      case 'user':
+        return (
+          <svg className={iconClass} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <circle cx="10" cy="7" r="3" />
+            <path d="M4 17c1.6-3 4-4.5 6-4.5S14.4 14 16 17" strokeLinecap="round" />
+          </svg>
+        );
+      case 'mail':
+        return (
+          <svg className={iconClass} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <rect x="3" y="5" width="14" height="10" rx="1.5" />
+            <path d="M4 6.5 10 11l6-4.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        );
+      case 'layers':
+        return (
+          <svg className={iconClass} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <path d="M10 3 3 7l7 4 7-4-7-4Z" strokeLinejoin="round" />
+            <path d="M3 11l7 4 7-4" strokeLinejoin="round" />
+          </svg>
+        );
+    }
+  };
+
+  const pageShell = 'min-h-screen text-slate-900';
+  const panelShell = 'rounded-[24px] border border-slate-200/80 bg-white/92 shadow-[0_14px_40px_rgba(15,23,42,0.08)] backdrop-blur';
+  const sectionShell = 'rounded-[20px] border border-slate-200/80 bg-white shadow-[0_12px_30px_rgba(15,23,42,0.06)]';
+  const primaryButton = 'inline-flex items-center justify-center gap-2 rounded-[14px] bg-[#2f67ff] px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(47,103,255,0.28)] transition hover:bg-[#2456de]';
+  const secondaryButton = 'inline-flex items-center justify-center gap-2 rounded-[14px] border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-[#2f67ff] shadow-[0_10px_24px_rgba(15,23,42,0.04)] transition hover:border-slate-300 hover:bg-slate-50';
+
+  const SkeletonLine = ({ className = '' }: { className?: string }) => (
+    <div className={`animate-pulse rounded-full bg-slate-200/80 ${className}`} />
+  );
+
+  const SkeletonTable = ({ rows = 4 }: { rows?: number }) => (
+    <div className="overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-[0_14px_30px_rgba(15,23,42,0.05)]">
+      <div className="bg-[linear-gradient(180deg,_#f7f9ff_0%,_#eef3ff_100%)] px-5 py-4">
+        <div className="grid grid-cols-6 gap-4">
+          <SkeletonLine className="h-3 w-24" />
+          <SkeletonLine className="h-3 w-28" />
+          <SkeletonLine className="h-3 w-20" />
+          <SkeletonLine className="h-3 w-24" />
+          <SkeletonLine className="h-3 w-28" />
+          <SkeletonLine className="h-3 w-20" />
+        </div>
+      </div>
+      <div className="divide-y divide-slate-100 bg-white">
+        {Array.from({ length: rows }).map((_, index) => (
+          <div key={index} className="grid grid-cols-6 gap-4 px-5 py-5">
+            <SkeletonLine className="h-8 w-20 rounded-[10px]" />
+            <div className="space-y-2">
+              <SkeletonLine className="h-3 w-4/5" />
+              <SkeletonLine className="h-3 w-3/5" />
+            </div>
+            <SkeletonLine className="h-3 w-16" />
+            <SkeletonLine className="h-8 w-28 rounded-[12px]" />
+            <SkeletonLine className="h-8 w-28 rounded-[12px]" />
+            <SkeletonLine className="h-8 w-28 rounded-[12px]" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const SkeletonTemplateCard = () => (
+    <div className="rounded-[18px] border border-slate-200 bg-white p-5 shadow-[0_12px_30px_rgba(15,23,42,0.05)] sm:p-6">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <SkeletonLine className="h-4 w-48" />
+        <SkeletonLine className="h-9 w-28 rounded-[12px]" />
+      </div>
+      <div className="space-y-4">
+        <div>
+          <SkeletonLine className="mb-2 h-3 w-16" />
+          <SkeletonLine className="h-12 w-full rounded-[12px]" />
+        </div>
+        <div>
+          <SkeletonLine className="mb-2 h-3 w-20" />
+          <div className="space-y-2 rounded-[14px] border border-slate-200 bg-slate-50 p-4">
+            <SkeletonLine className="h-3 w-4/5" />
+            <SkeletonLine className="h-3 w-11/12" />
+            <SkeletonLine className="h-3 w-3/5" />
+            <SkeletonLine className="h-3 w-9/12" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const SkeletonSubjectSection = () => (
+    <div>
+      <div className="mb-5 flex items-center gap-3">
+        <SkeletonLine className="h-10 w-10 rounded-full" />
+        <SkeletonLine className="h-5 w-32" />
+      </div>
+      <SkeletonTable rows={4} />
+    </div>
+  );
+
+  const SkeletonModeratorsSection = () => (
+    <div>
+      <SkeletonLine className="mb-4 h-5 w-36" />
+      <SkeletonTable rows={4} />
+    </div>
+  );
+
+  const SkeletonEmailTemplatesSection = () => (
+    <div>
+      <SkeletonLine className="mb-4 h-5 w-40" />
+      <div className="mb-6 space-y-2">
+        <SkeletonLine className="h-3 w-full max-w-3xl" />
+        <SkeletonLine className="h-3 w-5/6 max-w-3xl" />
+      </div>
+      <div className="space-y-6">
+        <SkeletonTemplateCard />
+        <SkeletonTemplateCard />
+      </div>
+    </div>
+  );
+
   useEffect(() => {
     const isAuth = localStorage.getItem('isAuthenticated');
     if (!isAuth) {
@@ -157,6 +298,8 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error('Error loading data:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -170,12 +313,12 @@ export default function Dashboard() {
       const workbook = XLSX.read(data, { type: 'binary' });
 
       const mainSheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rowsData: any[] = XLSX.utils.sheet_to_json(mainSheet);
+      const rowsData = XLSX.utils.sheet_to_json<Record<string, string>>(mainSheet);
 
       const parsedSubjects: Subject[] = [];
       const moderatorsMap = new Map<string, Moderator>();
 
-      rowsData.forEach((row: any) => {
+      rowsData.forEach((row) => {
         const subject: Subject = {
           code: row['PAPER CODE'] || '',
           name: row['PAPER NAME'] || '',
@@ -484,10 +627,15 @@ export default function Dashboard() {
     setExamStructure({ ...examStructure, groups: updated });
   };
 
-  const handleUpdateQuestionType = (groupIndex: number, typeIndex: number, field: 'type' | 'min' | 'max', value: any) => {
+  const handleUpdateQuestionType = (
+    groupIndex: number,
+    typeIndex: number,
+    field: 'type' | 'min' | 'max',
+    value: string,
+  ) => {
     const updated = [...examStructure.groups];
     if (field === 'type') {
-      updated[groupIndex].questionTypes[typeIndex].type = value;
+      updated[groupIndex].questionTypes[typeIndex].type = value as QuestionType['type'];
     } else {
       updated[groupIndex].questionTypes[typeIndex][field] = parseInt(value) || 0;
     }
@@ -516,22 +664,22 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (editingTemplate === 'invitation') {
-      setEditorValues({
-        ...editorValues,
+      setEditorValues((current) => ({
+        ...current,
         invitationSubject: emailTemplates.invitation?.subject || 'Invitation to Admin Panel - Moderator Access',
         invitationBody: emailTemplates.invitation?.body || defaultInvitationBody,
-      });
+      }));
     } else if (editingTemplate === 'reminder') {
-      setEditorValues({
-        ...editorValues,
+      setEditorValues((current) => ({
+        ...current,
         reminderSubject: emailTemplates.reminder?.subject || 'Reminder: Question Paper Submission Deadline Approaching',
         reminderBody: emailTemplates.reminder?.body || defaultReminderBody,
-      });
+      }));
     }
-  }, [editingTemplate, emailTemplates]);
+  }, [editingTemplate, emailTemplates, defaultInvitationBody, defaultReminderBody]);
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 to-gray-100">
+    <div className={pageShell}>
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
       {dialog && (
         <Dialog
@@ -543,164 +691,209 @@ export default function Dashboard() {
         />
       )}
 
-      <div className="bg-white shadow-md border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage subjects and moderators</p>
+      <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_rgba(47,103,255,0.14),_transparent_34%),radial-gradient(circle_at_top_right,_rgba(97,171,255,0.12),_transparent_32%),linear-gradient(180deg,_#f8fbff_0%,_#f5f8fd_48%,_#eef4fb_100%)]" />
+
+      <div className="mx-auto flex w-full max-w-[1520px] flex-col gap-6 px-3 py-4 sm:px-4 lg:px-5 lg:py-5">
+        <header className={`${panelShell} flex items-center justify-between px-5 py-4 sm:px-6`}>
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[linear-gradient(180deg,_#eef4ff_0%,_#ffffff_100%)] shadow-[0_10px_26px_rgba(15,23,42,0.08)] ring-1 ring-white/70">
+              <Image
+                src="/transparent_bg.png"
+                alt="PaperKraft"
+                width={34}
+                height={34}
+                className="h-8 w-8 rounded-xl object-cover shadow-[0_10px_18px_rgba(47,103,255,0.18)]"
+                priority
+              />
+            </div>
+            <div>
+              <h1 className="text-[24px] font-[700] tracking-[-0.03em] text-slate-900">Admin Dashboard</h1>
+              <p className="mt-0.5 text-[13px] font-medium text-slate-500">Manage subjects and moderators</p>
+            </div>
           </div>
           <div className="flex gap-3">
             <a
               href="https://github.com/santu8597/electron-builder/releases/download/revised/PaperKraft-revised-Setup.1.0.0.exe"
               download
-              className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm hover:shadow-md flex items-center gap-2"
+              className={secondaryButton}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-[18px] w-[18px]" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M10 3v10" strokeLinecap="round" />
+                <path d="m6.5 9.5 3.5 3.5 3.5-3.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M4 17h12" strokeLinecap="round" />
               </svg>
               Get PaperKraft
             </a>
             <button
               onClick={handleLogout}
-              className="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium shadow-sm hover:shadow-md"
+              className={primaryButton}
             >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-[18px] w-[18px]" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M7.5 4.5h-2A1.5 1.5 0 0 0 4 6v8A1.5 1.5 0 0 0 5.5 15.5h2" strokeLinecap="round" />
+                <path d="M11 6.5 14.5 10 11 13.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M14 10H7" strokeLinecap="round" />
+              </svg>
               Logout
             </button>
           </div>
-        </div>
-      </div>
+        </header>
 
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-900">Upload Excel File</h2>
-          <input
-            type="file"
-            accept=".xlsx,.xls"
-            onChange={handleFileUpload}
-            className="block w-full text-sm text-gray-700 mb-4
-              file:mr-4 file:py-2.5 file:px-5
-              file:rounded-lg file:border-0
-              file:text-sm file:font-medium
-              file:bg-blue-50 file:text-blue-700
-              hover:file:bg-blue-100 file:cursor-pointer
-              border border-gray-300 rounded-lg cursor-pointer bg-gray-50"
-          />
-          <div className="flex gap-3">
+        <main className="space-y-6 pb-6">
+          <section className={`${panelShell} overflow-hidden px-4 py-4 sm:px-5 sm:py-5`}>
+            <div className="mb-5 flex items-center gap-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(180deg,_#edf3ff_0%,_#ffffff_100%)] text-[#2f67ff] shadow-[0_10px_22px_rgba(15,23,42,0.05)] ring-1 ring-slate-100">
+                <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 3v10" />
+                  <path d="m8.5 6.5 3.5-3.5 3.5 3.5" />
+                  <path d="M5 14v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-4" />
+                </svg>
+              </div>
+              <h2 className="text-[18px] font-[700] tracking-[-0.02em] text-slate-900">Upload Excel File</h2>
+            </div>
+            <label className="group flex cursor-pointer items-stretch overflow-hidden rounded-[14px] border border-slate-200 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.03)] transition hover:border-slate-300">
+              <div className="flex items-center gap-2 border-r border-slate-200 bg-slate-50 px-5 py-4 text-[#2f67ff] transition group-hover:bg-slate-100">
+                <svg className="h-[18px] w-[18px]" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10 3v10" />
+                  <path d="m6.5 7.5 3.5-3.5 3.5 3.5" />
+                  <path d="M4 15.5A2.5 2.5 0 0 0 6.5 18h7A2.5 2.5 0 0 0 16 15.5" />
+                </svg>
+                <span className="text-[14px] font-[700]">Choose File</span>
+              </div>
+              <div className="flex min-w-0 flex-1 items-center justify-between px-4 py-4 text-[14px] text-slate-400 sm:px-5">
+                <span className="truncate">No file chosen</span>
+                <svg className="h-[18px] w-[18px] shrink-0 text-slate-400" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6">
+                  <path d="m12.5 4.5 3 3a2.1 2.1 0 0 1 0 3l-7 7a2.6 2.6 0 0 1-1.5.8l-3.8.5.5-3.8a2.6 2.6 0 0 1 .8-1.5l7-7a2.1 2.1 0 0 1 3 0Z" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+            </label>
+            <div className="mt-5 flex flex-wrap gap-3">
             <button
               onClick={handleSaveToDatabase}
-              className="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-sm hover:shadow-md"
+              className={primaryButton}
             >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-[18px] w-[18px]" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M4.5 3.5h7l4 4V16a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 3.5 16V5A1.5 1.5 0 0 1 5 3.5Z" />
+                <path d="M6.5 3.5V8h6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
               Save to Database
             </button>
             <button
               onClick={handleClearDatabase}
-              className="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium shadow-sm hover:shadow-md"
+              className={secondaryButton}
             >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-[18px] w-[18px]" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M7 5.5V4.25A1.25 1.25 0 0 1 8.25 3h3.5A1.25 1.25 0 0 1 13 4.25V5.5" strokeLinecap="round" />
+                <path d="M4.5 5.5h11" strokeLinecap="round" />
+                <path d="M7.5 8v6.5M10 8v6.5M12.5 8v6.5" strokeLinecap="round" />
+                <path d="M6.25 5.5l.5 9A1.5 1.5 0 0 0 8.24 16h3.52a1.5 1.5 0 0 0 1.49-1.5l.5-9" strokeLinejoin="round" />
+              </svg>
               Clear Database
             </button>
-          </div>
-        </div>
+            </div>
+          </section>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="border-b border-gray-200">
-            <nav className="flex -mb-px">
-              <button
-                onClick={() => setActiveTab('subjects')}
-                className={`px-6 py-4 text-sm font-medium transition-colors ${
-                  activeTab === 'subjects'
-                    ? 'border-b-2 border-blue-600 text-blue-600'
-                    : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Subject Allocation
-              </button>
-              <button
-                onClick={() => setActiveTab('moderators')}
-                className={`px-6 py-4 text-sm font-medium transition-colors ${
-                  activeTab === 'moderators'
-                    ? 'border-b-2 border-blue-600 text-blue-600'
-                    : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Moderators
-              </button>
-              <button
-                onClick={() => setActiveTab('emailTemplates')}
-                className={`px-6 py-4 text-sm font-medium transition-colors ${
-                  activeTab === 'emailTemplates'
-                    ? 'border-b-2 border-blue-600 text-blue-600'
-                    : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Email Templates
-              </button>
-              <button
-                onClick={() => setActiveTab('examStructure')}
-                className={`px-6 py-4 text-sm font-medium transition-colors ${
-                  activeTab === 'examStructure'
-                    ? 'border-b-2 border-blue-600 text-blue-600'
-                    : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Exam Structure
-              </button>
-            </nav>
-          </div>
+          <section className={sectionShell}>
+            <div className="border-b border-slate-200 px-4 pt-3 sm:px-5">
+              <nav className="flex flex-wrap gap-2 sm:gap-3">
+                {tabs.map((tab) => {
+                  const isActive = activeTab === tab.id;
 
-          <div className="p-6">
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`group -mb-px inline-flex items-center gap-2 border-b-2 px-3 pb-4 pt-1 text-[14px] font-[600] transition sm:px-4 ${
+                        isActive
+                          ? 'border-[#2f67ff] text-[#2f67ff]'
+                          : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800'
+                      }`}
+                    >
+                      {renderTabIcon(tab.icon)}
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+
+            <div className="px-4 py-5 sm:px-5 sm:py-6">
             {activeTab === 'subjects' && (
+              isLoading ? (
+                <SkeletonSubjectSection />
+              ) : (
               <div>
-                <h3 className="text-lg font-semibold mb-4 text-gray-900">Subjects</h3>
+                <div className="mb-5 flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(180deg,_#edf3ff_0%,_#ffffff_100%)] text-[#2f67ff] shadow-[0_10px_22px_rgba(15,23,42,0.05)] ring-1 ring-slate-100">
+                    <svg viewBox="0 0 20 20" fill="none" className="h-[18px] w-[18px]" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 4.5h5v5H4z" />
+                      <path d="M11 4.5h5v5h-5z" />
+                      <path d="M4 11.5h5v5H4z" />
+                      <path d="M11 11.5h5v5h-5z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-[18px] font-[700] tracking-[-0.02em] text-slate-900">Subjects</h3>
+                </div>
                 {subjects.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No subjects uploaded yet.</p>
+                  <p className="rounded-[18px] border border-dashed border-slate-200 bg-slate-50/60 py-12 text-center text-[14px] font-medium text-slate-500">No subjects uploaded yet.</p>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+                  <div className="overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-[0_14px_30px_rgba(15,23,42,0.05)]">
+                    <table className="min-w-full border-separate border-spacing-0">
+                      <thead className="bg-[linear-gradient(180deg,_#f7f9ff_0%,_#eef3ff_100%)]">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          <th className="px-5 py-4 text-left text-[11px] font-[800] uppercase tracking-[0.18em] text-[#3763d7]">
                             Subject Code
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          <th className="px-5 py-4 text-left text-[11px] font-[800] uppercase tracking-[0.18em] text-[#3763d7]">
                             Subject Name
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          <th className="px-5 py-4 text-left text-[11px] font-[800] uppercase tracking-[0.18em] text-[#3763d7]">
                             Department
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          <th className="px-5 py-4 text-left text-[11px] font-[800] uppercase tracking-[0.18em] text-[#3763d7]">
                             Question Bank
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                            Moderator's Paper
+                          <th className="px-5 py-4 text-left text-[11px] font-[800] uppercase tracking-[0.18em] text-[#3763d7]">
+                            Moderator&apos;s Paper
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          <th className="px-5 py-4 text-left text-[11px] font-[800] uppercase tracking-[0.18em] text-[#3763d7]">
                             Syllabus
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
+                      <tbody className="bg-white">
                         {subjects.map((subject, index) => (
-                          <tr key={index} className="hover:bg-gray-50 transition-colors">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              {subject.code}
+                          <tr key={index} className="border-t border-slate-200 transition hover:bg-slate-50/80">
+                            <td className="px-5 py-5 align-top text-[14px] font-[700] text-[#2f67ff]">
+                              <span className="inline-flex rounded-[10px] bg-[#f4f7ff] px-3 py-2 shadow-[0_8px_18px_rgba(15,23,42,0.03)]">
+                                {subject.code}
+                              </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            <td className="px-5 py-5 align-top text-[14px] font-[500] leading-6 text-slate-700">
                               {subject.name}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            <td className="px-5 py-5 align-top text-[14px] font-[500] text-slate-700">
                               {subject.department}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <td className="px-5 py-5 align-top text-[14px]">
                               {subject.questionPaper ? (
-                                <div className="flex items-center gap-2">
-                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    ✓ Uploaded
+                                <div className="flex items-center gap-3">
+                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#dff6e7] px-3 py-1.5 text-[12px] font-[700] text-[#26935f]">
+                                    <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="m5.5 10 3 3 6-6" />
+                                    </svg>
+                                    Uploaded
                                   </span>
                                   <a 
                                     href={subject.questionPaper.pinataUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-blue-600 hover:text-blue-800 text-xs font-medium hover:underline"
+                                    className="text-[14px] font-[700] text-[#2f67ff] hover:underline"
                                     title={subject.questionPaper.fileName}
                                   >
                                     View
@@ -715,8 +908,8 @@ export default function Dashboard() {
                                     className="hidden"
                                     disabled={uploadingSubjectCode === subject.code}
                                   />
-                                  <span className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm hover:shadow-md disabled:bg-gray-400">
-                                    <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <span className="inline-flex items-center gap-2 rounded-[12px] bg-[#2f67ff] px-4 py-2.5 text-[13px] font-[700] text-white shadow-[0_10px_24px_rgba(47,103,255,0.25)] transition hover:bg-[#2456de] disabled:bg-gray-400">
+                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                                     </svg>
                                     {uploadingSubjectCode === subject.code ? 'Uploading...' : 'Upload Question Bank'}
@@ -724,38 +917,41 @@ export default function Dashboard() {
                                 </label>
                               )}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <td className="px-5 py-5 align-top text-[14px]">
                               {subject.is_mod_questionPaperUploaded && subject.mod_questionPaper ? (
                                 <a
                                   href={subject.mod_questionPaper.pinataUrl}
                                   download={subject.mod_questionPaper.fileName}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-sm hover:shadow-md text-xs"
+                                  className="inline-flex items-center gap-2 rounded-[12px] bg-[#2f67ff] px-4 py-2.5 text-[13px] font-[700] text-white shadow-[0_10px_24px_rgba(47,103,255,0.25)] transition hover:bg-[#2456de]"
                                   title={`Download ${subject.mod_questionPaper.fileName}`}
                                 >
-                                  <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                   </svg>
                                   Download Paper
                                 </a>
                               ) : (
-                                <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                <span className="inline-flex items-center rounded-full bg-[#eef2f7] px-3 py-1.5 text-[12px] font-[700] text-slate-500">
                                   Not Uploaded
                                 </span>
                               )}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <td className="px-5 py-5 align-top text-[14px]">
                               {subject.syllabus ? (
-                                <div className="flex items-center gap-2">
-                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    ✓ Uploaded
+                                <div className="flex items-center gap-3">
+                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#dff6e7] px-3 py-1.5 text-[12px] font-[700] text-[#26935f]">
+                                    <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="m5.5 10 3 3 6-6" />
+                                    </svg>
+                                    Uploaded
                                   </span>
                                   <a 
                                     href={subject.syllabus.pinataUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-blue-600 hover:text-blue-800 text-xs font-medium hover:underline"
+                                    className="text-[14px] font-[700] text-[#2f67ff] hover:underline"
                                     title={subject.syllabus.fileName}
                                   >
                                     View
@@ -770,8 +966,8 @@ export default function Dashboard() {
                                     className="hidden"
                                     disabled={uploadingSyllabusCode === subject.code}
                                   />
-                                  <span className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium shadow-sm hover:shadow-md disabled:bg-gray-400">
-                                    <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <span className="inline-flex items-center gap-2 rounded-[12px] bg-white px-4 py-2.5 text-[13px] font-[700] text-[#2f67ff] shadow-[0_10px_24px_rgba(15,23,42,0.05)] ring-1 ring-slate-200 transition hover:bg-slate-50">
+                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                                     </svg>
                                     {uploadingSyllabusCode === subject.code ? 'Uploading...' : 'Upload Syllabus'}
@@ -786,61 +982,65 @@ export default function Dashboard() {
                   </div>
                 )}
               </div>
+              )
             )}
 
             {activeTab === 'moderators' && (
+              isLoading ? (
+                <SkeletonModeratorsSection />
+              ) : (
               <div>
-                <h3 className="text-lg font-semibold mb-4 text-gray-900">Moderators</h3>
+                <h3 className="text-[18px] font-[700] tracking-[-0.02em] text-slate-900 mb-4">Moderators</h3>
                 {moderators.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No moderators uploaded yet.</p>
+                  <p className="rounded-[18px] border border-dashed border-slate-200 bg-slate-50/60 py-12 text-center text-[14px] font-medium text-slate-500">No moderators uploaded yet.</p>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+                  <div className="overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-[0_14px_30px_rgba(15,23,42,0.05)]">
+                    <table className="min-w-full border-separate border-spacing-0">
+                      <thead className="bg-[linear-gradient(180deg,_#f7f9ff_0%,_#eef3ff_100%)]">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          <th className="px-5 py-4 text-left text-[11px] font-[800] uppercase tracking-[0.18em] text-[#3763d7]">
                             Name
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          <th className="px-5 py-4 text-left text-[11px] font-[800] uppercase tracking-[0.18em] text-[#3763d7]">
                             Email
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          <th className="px-5 py-4 text-left text-[11px] font-[800] uppercase tracking-[0.18em] text-[#3763d7]">
                             Phone
                           </th>
                           {/* <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                             Password
                           </th> */}
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          <th className="px-5 py-4 text-left text-[11px] font-[800] uppercase tracking-[0.18em] text-[#3763d7]">
                             Assigned Subjects
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          <th className="px-5 py-4 text-left text-[11px] font-[800] uppercase tracking-[0.18em] text-[#3763d7]">
                             Actions
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
+                      <tbody className="bg-white">
                         {moderators.map((moderator, index) => (
-                          <tr key={index} className="hover:bg-gray-50 transition-colors">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          <tr key={index} className="border-t border-slate-200 transition hover:bg-slate-50/80">
+                            <td className="px-5 py-5 whitespace-nowrap text-[14px] font-[700] text-slate-900">
                               {moderator.name}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            <td className="px-5 py-5 whitespace-nowrap text-[14px] text-slate-700">
                               {moderator.email}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            <td className="px-5 py-5 whitespace-nowrap text-[14px] text-slate-700">
                               {moderator.phone}
                             </td>
                             
-                            <td className="px-6 py-4 text-sm text-gray-700">
-                              <div className="flex flex-wrap gap-1">
+                            <td className="px-5 py-5 text-[14px] text-slate-700">
+                              <div className="flex flex-wrap gap-1.5">
                                 {moderator.assignedSubjects.map((subject, idx) => (
-                                  <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                  <span key={idx} className="inline-flex items-center rounded-[8px] bg-[#edf3ff] px-2.5 py-1 text-[12px] font-[700] text-[#2f67ff]">
                                     {subject}
                                   </span>
                                 ))}
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <td className="px-5 py-5 whitespace-nowrap text-[14px]">
                               <div className="flex gap-2">
                                 {(() => {
                                   const disableActions = areAllAssignedModeratorPapersUploaded(moderator);
@@ -852,7 +1052,7 @@ export default function Dashboard() {
                                   onClick={() => handleSendInvitation(moderator)}
                                       disabled={disableActions || sendingInvitationEmail === moderator.email}
                                       title={disableActions ? disabledReason : undefined}
-                                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm hover:shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                  className="inline-flex items-center justify-center rounded-[12px] bg-[#2f67ff] px-4 py-2.5 text-[13px] font-[700] text-white shadow-[0_10px_24px_rgba(47,103,255,0.25)] transition hover:bg-[#2456de] disabled:cursor-not-allowed disabled:bg-slate-300"
                                 >
                                   {sendingInvitationEmail === moderator.email ? 'Sending...' : 'Invite'}
                                 </button>
@@ -860,7 +1060,7 @@ export default function Dashboard() {
                                   onClick={() => handleSendReminder(moderator)}
                                       disabled={disableActions || sendingReminderEmail === moderator.email}
                                       title={disableActions ? disabledReason : undefined}
-                                  className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium shadow-sm hover:shadow-md disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                  className="inline-flex items-center justify-center rounded-[12px] bg-[#ff9b3d] px-4 py-2.5 text-[13px] font-[700] text-white shadow-[0_10px_24px_rgba(255,155,61,0.22)] transition hover:bg-[#ef8a21] disabled:cursor-not-allowed disabled:bg-slate-300"
                                 >
                                   {sendingReminderEmail === moderator.email ? 'Sending...' : 'Remind'}
                                 </button>
@@ -876,27 +1076,31 @@ export default function Dashboard() {
                   </div>
                 )}
               </div>
+              )
             )}
 
             {activeTab === 'emailTemplates' && (
+              isLoading ? (
+                <SkeletonEmailTemplatesSection />
+              ) : (
               <div>
-                <h3 className="text-lg font-semibold mb-4 text-gray-900">Email Templates</h3>
-                <p className="text-sm text-gray-600 mb-6">
+                <h3 className="text-[18px] font-[700] tracking-[-0.02em] text-slate-900 mb-4">Email Templates</h3>
+                <p className="mb-6 max-w-3xl text-[14px] leading-6 text-slate-500">
                   Customize email body templates for invitations and reminders. Use placeholders like{' '}
-                  <code className="bg-gray-100 px-2 py-0.5 rounded text-xs">{'{{moderatorName}}'}</code>,{' '}
-                  <code className="bg-gray-100 px-2 py-0.5 rounded text-xs">{'{{moderatorEmail}}'}</code>,{' '}
-                  <code className="bg-gray-100 px-2 py-0.5 rounded text-xs">{'{{password}}'}</code>, and{' '}
-                  <code className="bg-gray-100 px-2 py-0.5 rounded text-xs">{'{{assignedSubjects}}'}</code>.
+                  <code className="rounded-md bg-slate-100 px-2 py-0.5 text-[12px] font-[700] text-slate-700">{'{{moderatorName}}'}</code>,{' '}
+                  <code className="rounded-md bg-slate-100 px-2 py-0.5 text-[12px] font-[700] text-slate-700">{'{{moderatorEmail}}'}</code>,{' '}
+                  <code className="rounded-md bg-slate-100 px-2 py-0.5 text-[12px] font-[700] text-slate-700">{'{{password}}'}</code>, and{' '}
+                  <code className="rounded-md bg-slate-100 px-2 py-0.5 text-[12px] font-[700] text-slate-700">{'{{assignedSubjects}}'}</code>.
                 </p>
                 
                 <div className="space-y-6">
                   {/* Invitation Template */}
-                  <div className="border border-gray-200 rounded-lg p-6">
-                    <div className="flex justify-between items-center mb-4">
-                      <h4 className="text-md font-semibold text-gray-800">Invitation Email Template</h4>
+                  <div className="rounded-[18px] border border-slate-200 bg-white p-5 shadow-[0_12px_30px_rgba(15,23,42,0.05)] sm:p-6">
+                    <div className="mb-4 flex items-center justify-between gap-4">
+                      <h4 className="text-[16px] font-[700] tracking-[-0.01em] text-slate-800">Invitation Email Template</h4>
                       <button
                         onClick={() => setEditingTemplate(editingTemplate === 'invitation' ? null : 'invitation')}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+                        className="inline-flex items-center rounded-[12px] bg-[#2f67ff] px-4 py-2.5 text-[13px] font-[700] text-white transition hover:bg-[#2456de]"
                       >
                         {editingTemplate === 'invitation' ? 'Cancel' : 'Edit Template'}
                       </button>
@@ -911,17 +1115,17 @@ export default function Dashboard() {
                         className="space-y-4"
                       >
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                          <label className="mb-2 block text-[13px] font-[700] text-slate-600">Subject</label>
                           <input
                             type="text"
                             value={editorValues.invitationSubject}
                             onChange={(e) => setEditorValues({ ...editorValues, invitationSubject: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                            className="w-full rounded-[12px] border border-slate-200 bg-white px-4 py-3 text-[14px] text-slate-900 outline-none transition focus:border-[#2f67ff] focus:ring-4 focus:ring-[#2f67ff]/10"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Email Body</label>
+                          <label className="mb-2 block text-[13px] font-[700] text-slate-600">Email Body</label>
                           <RichTextEditor
                             value={editorValues.invitationBody}
                             onChange={(html) => setEditorValues({ ...editorValues, invitationBody: html })}
@@ -929,7 +1133,7 @@ export default function Dashboard() {
                         </div>
                         <button
                           type="submit"
-                          className="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                          className="inline-flex items-center rounded-[12px] bg-[#2f67ff] px-5 py-2.5 text-[13px] font-[700] text-white transition hover:bg-[#2456de]"
                         >
                           Save Template
                         </button>
@@ -937,15 +1141,15 @@ export default function Dashboard() {
                     ) : (
                       <div>
                         <div className="mb-3">
-                          <p className="text-sm font-medium text-gray-600">Subject:</p>
-                          <p className="text-sm text-gray-800 mt-1">
+                          <p className="text-[13px] font-[700] text-slate-500">Subject:</p>
+                          <p className="mt-1 text-[14px] text-slate-800">
                             {emailTemplates.invitation?.subject || 'Invitation to Admin Panel - Moderator Access'}
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-gray-600 mb-2">Body Preview:</p>
-                          <div className="bg-gray-50 p-4 rounded border border-gray-200 max-h-64 overflow-y-auto">
-                            <pre className="text-xs whitespace-pre-wrap font-mono text-gray-700">
+                          <p className="mb-2 text-[13px] font-[700] text-slate-500">Body Preview:</p>
+                          <div className="max-h-64 overflow-y-auto rounded-[14px] border border-slate-200 bg-slate-50 p-4">
+                            <pre className="whitespace-pre-wrap font-sans text-[13px] leading-6 text-slate-700">
                               {emailTemplates.invitation?.body || 'No template saved yet. Click "Edit Template" to create one.'}
                             </pre>
                           </div>
@@ -955,12 +1159,12 @@ export default function Dashboard() {
                   </div>
 
                   {/* Reminder Template */}
-                  <div className="border border-gray-200 rounded-lg p-6">
-                    <div className="flex justify-between items-center mb-4">
-                      <h4 className="text-md font-semibold text-gray-800">Reminder Email Template</h4>
+                  <div className="rounded-[18px] border border-slate-200 bg-white p-5 shadow-[0_12px_30px_rgba(15,23,42,0.05)] sm:p-6">
+                    <div className="mb-4 flex items-center justify-between gap-4">
+                      <h4 className="text-[16px] font-[700] tracking-[-0.01em] text-slate-800">Reminder Email Template</h4>
                       <button
                         onClick={() => setEditingTemplate(editingTemplate === 'reminder' ? null : 'reminder')}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+                        className="inline-flex items-center rounded-[12px] bg-[#2f67ff] px-4 py-2.5 text-[13px] font-[700] text-white transition hover:bg-[#2456de]"
                       >
                         {editingTemplate === 'reminder' ? 'Cancel' : 'Edit Template'}
                       </button>
@@ -975,17 +1179,17 @@ export default function Dashboard() {
                         className="space-y-4"
                       >
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                          <label className="mb-2 block text-[13px] font-[700] text-slate-600">Subject</label>
                           <input
                             type="text"
                             value={editorValues.reminderSubject}
                             onChange={(e) => setEditorValues({ ...editorValues, reminderSubject: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                            className="w-full rounded-[12px] border border-slate-200 bg-white px-4 py-3 text-[14px] text-slate-900 outline-none transition focus:border-[#2f67ff] focus:ring-4 focus:ring-[#2f67ff]/10"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Email Body</label>
+                          <label className="mb-2 block text-[13px] font-[700] text-slate-600">Email Body</label>
                           <RichTextEditor
                             value={editorValues.reminderBody}
                             onChange={(html) => setEditorValues({ ...editorValues, reminderBody: html })}
@@ -993,7 +1197,7 @@ export default function Dashboard() {
                         </div>
                         <button
                           type="submit"
-                          className="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                          className="inline-flex items-center rounded-[12px] bg-[#2f67ff] px-5 py-2.5 text-[13px] font-[700] text-white transition hover:bg-[#2456de]"
                         >
                           Save Template
                         </button>
@@ -1001,15 +1205,15 @@ export default function Dashboard() {
                     ) : (
                       <div>
                         <div className="mb-3">
-                          <p className="text-sm font-medium text-gray-600">Subject:</p>
-                          <p className="text-sm text-gray-800 mt-1">
+                          <p className="text-[13px] font-[700] text-slate-500">Subject:</p>
+                          <p className="mt-1 text-[14px] text-slate-800">
                             {emailTemplates.reminder?.subject || 'Reminder: Question Paper Submission Deadline Approaching'}
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-gray-600 mb-2">Body Preview:</p>
-                          <div className="bg-gray-50 p-4 rounded border border-gray-200 max-h-64 overflow-y-auto">
-                            <pre className="text-xs whitespace-pre-wrap font-mono text-gray-700">
+                          <p className="mb-2 text-[13px] font-[700] text-slate-500">Body Preview:</p>
+                          <div className="max-h-64 overflow-y-auto rounded-[14px] border border-slate-200 bg-slate-50 p-4">
+                            <pre className="whitespace-pre-wrap font-sans text-[13px] leading-6 text-slate-700">
                               {emailTemplates.reminder?.body || 'No template saved yet. Click "Edit Template" to create one.'}
                             </pre>
                           </div>
@@ -1019,27 +1223,28 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
+              )
             )}
 
             {activeTab === 'examStructure' && (
               <div>
-                <div className="flex justify-between items-center mb-6">
+                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Exam Structure Configuration</h3>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <h3 className="text-[18px] font-[700] tracking-[-0.02em] text-slate-900">Exam Structure Configuration</h3>
+                    <p className="mt-1 text-[14px] text-slate-500">
                       Group A: MCQ & Fill in the Blanks only | Groups B+: Short & Long Answer only
                     </p>
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex flex-wrap gap-3">
                     <button
                       onClick={handleAddGroup}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+                      className="inline-flex items-center rounded-[12px] bg-[#2f67ff] px-4 py-2.5 text-[13px] font-[700] text-white transition hover:bg-[#2456de]"
                     >
                       Add Group
                     </button>
                     <button
                       onClick={handleSaveExamStructure}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-sm"
+                      className="inline-flex items-center rounded-[12px] bg-[#2f67ff] px-4 py-2.5 text-[13px] font-[700] text-white transition hover:bg-[#2456de]"
                     >
                       Save Structure
                     </button>
@@ -1048,43 +1253,43 @@ export default function Dashboard() {
 
                 <div className="space-y-6">
                   {examStructure.groups.map((group, groupIndex) => (
-                    <div key={groupIndex} className="border border-gray-200 rounded-lg p-6 bg-gray-50">
-                      <div className="flex justify-between items-start mb-4">
+                    <div key={groupIndex} className="rounded-[18px] border border-slate-200 bg-slate-50 p-5 shadow-[0_12px_30px_rgba(15,23,42,0.05)] sm:p-6">
+                      <div className="mb-4 flex items-start justify-between gap-4">
                         <div className="flex-1">
                           <input
                             type="text"
                             value={group.name}
                             onChange={(e) => handleUpdateGroupName(groupIndex, e.target.value)}
-                            className="text-lg font-semibold bg-white border border-gray-300 rounded px-3 py-2 text-gray-900 mb-2"
+                            className="mb-2 rounded-[12px] border border-slate-200 bg-white px-3 py-2 text-[16px] font-[700] text-slate-900 outline-none focus:border-[#2f67ff] focus:ring-4 focus:ring-[#2f67ff]/10"
                           />
                           {groupIndex === 0 && (
-                            <p className="text-xs text-blue-600 font-medium">
+                            <p className="text-[12px] font-[700] text-[#2f67ff]">
                               Group A: Can only have MCQ and Fill in the Blanks
                             </p>
                           )}
                           {groupIndex > 0 && (
-                            <p className="text-xs text-gray-600 font-medium">
+                            <p className="text-[12px] font-[700] text-slate-500">
                               Groups B+: Can only have Short Answer and Long Answer
                             </p>
                           )}
                         </div>
                         <button
                           onClick={() => handleRemoveGroup(groupIndex)}
-                          className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm"
+                          className="inline-flex items-center rounded-[12px] bg-[#2f67ff] px-3 py-2.5 text-[13px] font-[700] text-white transition hover:bg-[#2456de]"
                         >
                           Remove Group
                         </button>
                       </div>
 
-                      <div className="space-y-3 mb-4">
+                      <div className="mb-4 space-y-3">
                         {group.questionTypes.map((qt, typeIndex) => (
-                          <div key={typeIndex} className="flex items-center gap-3 bg-white p-4 rounded-lg border border-gray-300">
+                          <div key={typeIndex} className="flex flex-col gap-3 rounded-[14px] border border-slate-200 bg-white p-4 sm:flex-row sm:items-end">
                             <div className="flex-1">
-                              <label className="block text-xs font-medium text-gray-600 mb-1">Question Type</label>
+                              <label className="mb-1 block text-[12px] font-[700] text-slate-500">Question Type</label>
                               <select
                                 value={qt.type}
                                 onChange={(e) => handleUpdateQuestionType(groupIndex, typeIndex, 'type', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900"
+                                className="w-full rounded-[12px] border border-slate-200 bg-white px-3 py-2.5 text-[14px] text-slate-900 outline-none focus:border-[#2f67ff] focus:ring-4 focus:ring-[#2f67ff]/10"
                               >
                                 {groupIndex === 0 ? (
                                   <>
@@ -1100,28 +1305,28 @@ export default function Dashboard() {
                               </select>
                             </div>
                             <div className="w-24">
-                              <label className="block text-xs font-medium text-gray-600 mb-1">Min</label>
+                              <label className="mb-1 block text-[12px] font-[700] text-slate-500">Min</label>
                               <input
                                 type="number"
                                 value={qt.min}
                                 onChange={(e) => handleUpdateQuestionType(groupIndex, typeIndex, 'min', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900"
+                                className="w-full rounded-[12px] border border-slate-200 bg-white px-3 py-2.5 text-[14px] text-slate-900 outline-none focus:border-[#2f67ff] focus:ring-4 focus:ring-[#2f67ff]/10"
                                 min="0"
                               />
                             </div>
                             <div className="w-24">
-                              <label className="block text-xs font-medium text-gray-600 mb-1">Max</label>
+                              <label className="mb-1 block text-[12px] font-[700] text-slate-500">Max</label>
                               <input
                                 type="number"
                                 value={qt.max}
                                 onChange={(e) => handleUpdateQuestionType(groupIndex, typeIndex, 'max', e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900"
+                                className="w-full rounded-[12px] border border-slate-200 bg-white px-3 py-2.5 text-[14px] text-slate-900 outline-none focus:border-[#2f67ff] focus:ring-4 focus:ring-[#2f67ff]/10"
                                 min="0"
                               />
                             </div>
                             <button
                               onClick={() => handleRemoveQuestionType(groupIndex, typeIndex)}
-                              className="mt-5 px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm"
+                              className="inline-flex items-center rounded-[12px] bg-[#2f67ff] px-3 py-2.5 text-[13px] font-[700] text-white transition hover:bg-[#2456de]"
                             >
                               Remove
                             </button>
@@ -1131,7 +1336,7 @@ export default function Dashboard() {
 
                       <button
                         onClick={() => handleAddQuestionType(groupIndex)}
-                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium text-sm"
+                        className="inline-flex items-center rounded-[12px] bg-[#2f67ff] px-4 py-2.5 text-[13px] font-[700] text-white transition hover:bg-[#2456de]"
                       >
                         Add Question Type
                       </button>
@@ -1140,14 +1345,15 @@ export default function Dashboard() {
                 </div>
 
                 {examStructure.groups.length === 0 && (
-                  <div className="text-center py-12 text-gray-500">
-                    <p>No groups configured yet. Click "Add Group" to start.</p>
+                  <div className="py-12 text-center text-[14px] font-medium text-slate-500">
+                    <p>No groups configured yet. Click &quot;Add Group&quot; to start.</p>
                   </div>
                 )}
               </div>
             )}
-          </div>
-        </div>
+            </div>
+          </section>
+        </main>
       </div>
     </div>
   );
