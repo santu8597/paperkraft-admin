@@ -42,7 +42,7 @@ export default function Home() {
                 </div>
                 <div>
                   <p className="text-[13px] font-[700] uppercase tracking-[0.22em] text-[#2f67ff]">PaperKraft</p>
-                  <h1 className="mt-1 text-[28px] font-[800] tracking-[-0.04em] text-slate-900 sm:text-[34px]">Question paper generation for colleges</h1>
+                  <h1 className="mt-1 text-[36px] font-[900] tracking-[-0.04em] text-slate-900 sm:text-[48px]">Question Paper Moderation</h1>
                 </div>
               </div>
 
